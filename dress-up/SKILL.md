@@ -93,6 +93,67 @@ Concretely:
 - **Legacy MP:** `/dress-up <github-url> --prd ./PRD.md`
 - **Fast lane:** `/build-hifi` (no explore/dress-up gates)
 
+## Where this skill sits
+
+| Step | Skill | You are here |
+|------|--------|----------------|
+| 1 | `@design-spec` | |
+| 2 | `@explore-mockup` | |
+| 3 | **`@dress-up`** (Stages 0–4) | **yes** |
+| 4 (optional) | `@ux-review` | after `--finish` |
+
+At every **STOP**, suggest the **next invocation** from the table in [Next skill by checkpoint](#next-skill-by-checkpoint) below. Do not auto-run the next step.
+
+## Next skill by checkpoint
+
+Use the same `<project-dir>` (explore folder) or `<out>` (dress-up clone) from checkpoints. Substitute paths from `bootstrap-done.json` / `stage1-done.json`.
+
+### After Stage 1 (seed on 3053)
+
+**When:** Build passes, dev server up, user has seen raw seed at http://localhost:3053.
+
+**Next (same skill, next stage):**
+
+```text
+@dress-up --from-mockup <project-dir> --analyze
+# or legacy: @dress-up <mp-url> --analyze
+```
+
+**Say:** Seed looks good? Next is **dress-up Stage 2–3** (`--analyze`): PRD audit, scope dialog, structural scaffolding. Lo-fi previews on 3008/3009 can stay open for comparison.
+
+### After Stage 2 (phase1-scope written)
+
+**When:** User reviewed `phase1-scope.md` (edit if needed).
+
+**Next (same skill):** Stage 3 runs in the **same** `--analyze` invocation unless you already stopped; if stopped after Stage 2 only, user re-runs `--analyze`. After Stage 3 completes, see below.
+
+### After Stage 3 (scaffolding on 3053)
+
+**When:** Build passes, user clicked through scaffolded UI.
+
+**Next:**
+
+```text
+@dress-up --from-mockup <project-dir> --finish [--notes <path>]
+# or legacy: @dress-up <mp-url> --finish
+```
+
+**Say:** Structure locked? Next is **dress-up Stage 4** (`--finish`): peer-DS translation + build audit.
+
+### After Stage 4 (pipeline end)
+
+**When:** Build clean, http://localhost:3053 shows DS hi-fi.
+
+**Next (optional):**
+
+```text
+@ux-review
+```
+
+**Say:** Prototype is hi-fi on **3053**. Optional next: **`@ux-review`** (persona walkthrough + fixes). No further pipeline skill is required.
+
+**Do not** suggest `@explore-mockup` or `@design-spec` unless the user wants to restart the exercise.
+
 ## Preview ports (side by side)
 
 | Port | Source |
@@ -322,7 +383,8 @@ Save inventory to `<out>/.dress-up/inventory.json`.
 4. One blocking agent seeds `src/lib/mock-data.ts` + `src/lib/types.ts` from PRD §15/18 (minimal realistic rows).
 5. `npm install` if needed. `npm run build`.
 6. Start `PORT=3053 npm run dev` in background. Record PID in `stage1-done.json`.
-7. Print **Preview panel** (3008/3009/3053). **STOP** — wait for `--analyze`.
+7. Print **Preview panel** (3008/3009/3053).
+8. Suggest **Next skill: After Stage 1** (see above). **STOP** — wait for `--analyze`.
 
 **Do not kill ports 3008 or 3009.**
 
@@ -468,10 +530,11 @@ Dev server: http://localhost:3053
   This is the "seed" — no changes, no design system applied.
 
 When you're ready for analysis + scaffolding (Stage 2-3), run:
-  /dress-up <mp-url> --analyze [--prd <path>] [--brief <path>]
+  @dress-up --from-mockup <project-dir> --analyze
+  # or: @dress-up <mp-url> --analyze [--prd <path>]
 ```
 
-**STOP.** Do not auto-run Stage 2.
+Print **Preview panel**. Suggest **Next skill: After Stage 1**. **STOP.** Do not auto-run Stage 2.
 
 ---
 
@@ -988,11 +1051,10 @@ Outputs:
 → Open the scope file. Edit it directly if you want to override.
   Stage 3 reads it verbatim; what's in there is what gets built.
 
-When ready for Stage 3 (scaffolding), run:
-  /dress-up <mp-url> --implement
+When ready for Stage 3 (scaffolding), continue the same @dress-up --analyze run, or re-invoke --analyze if this turn ended after Stage 2 only.
 ```
 
-**STOP.** Do not auto-run Stage 3.
+**STOP** only if Stage 3 is not running in this turn. Do not auto-start Stage 3 in a new turn without user intent.
 
 ---
 
@@ -1181,10 +1243,11 @@ Dev server: http://localhost:3053 (reload to see changes)
   want — they'll be preserved through Stage 4.
 
 When you're ready for the design-system translation (Stage 4), run:
-  /dress-up <mp-url> --finish [--notes <path>]
+  @dress-up --from-mockup <project-dir> --finish [--notes <path>]
+  # or: @dress-up <mp-url> --finish
 ```
 
-**STOP.** Do not auto-run Stage 4.
+Print **Preview panel**. Suggest **Next skill: After Stage 3**. **STOP.** Do not auto-run Stage 4.
 
 ---
 
@@ -1455,15 +1518,15 @@ Report: <out>/DRESS-UP-REPORT.md
 Dev server: http://localhost:3053
 ```
 
-**STOP.** Do not offer to open files, deploy, or take next steps.
+Print **Preview panel**. Suggest **Next skill: After Stage 4** (`@ux-review` optional). **STOP.**
 
 ---
 
 ## Stop conditions
 
-- After Stage 1 Beat 1.4: stop, wait for `--analyze` invocation.
-- After Stage 3 Beat 3.4: stop, wait for `--finish` invocation.
-- After Stage 4 Beat 4.4: end of pipeline. Stop entirely.
+- After Stage 1: stop, suggest `--analyze`; see [Next skill by checkpoint](#next-skill-by-checkpoint).
+- After Stage 3: stop, suggest `--finish`.
+- After Stage 4: stop, suggest `@ux-review` optional; pipeline complete.
 
 ## Out of scope
 

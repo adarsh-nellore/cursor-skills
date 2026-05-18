@@ -37,10 +37,20 @@ has ≥ 10 minutes and wants the loop closed without serial bottlenecks.
 - User wants to read the audit before any code changes. (Use this
   skill with `--no-fix` to stop after the walkthrough.)
 - Likely fixes need design judgment the model shouldn't make alone
-  (IA redesign, new flow). Use `/build-lofi` to pick a direction
+  (IA redesign, new flow). Use **`@explore-mockup`** to pick a direction
   first.
 - Framework prototype with an unreachable dev server. Stage 1 will
   fail — start the server first.
+
+## Pipeline position
+
+**Previous step (typical):** `@dress-up --finish` (hi-fi on port **3053**) or `@build-hifi` fast lane.
+
+**Next step:** none required. When `UX-AUDIT.md` is written and fixes applied, tell the user the exercise loop is complete unless they want another pass.
+
+**Say (when done):**
+
+> UX audit loop closed. Prototype updated + `UX-AUDIT.md`. To revisit IA or spec, restart from **`@explore-mockup`** or **`@design-spec`** — do not suggest another pipeline skill by default.
 
 ## Hard rules
 

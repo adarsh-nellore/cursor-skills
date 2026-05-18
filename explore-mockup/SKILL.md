@@ -138,9 +138,28 @@ Print:
 2. **http://localhost:3009/sketch.html**
 3. Path to `mockup-handoff.json`
 4. One-line concept list
-5. Next: `@dress-up --from-mockup {project-dir} --prd {project-dir}/PRD.md`
 
-Then stop.
+Then apply **Next skill** below and stop.
+
+---
+
+## Next skill (suggest when this skill is done)
+
+**Previous step in pipeline:** `@design-spec` (same `{project-dir}` must contain `PRD.md`).
+
+**Next step:** `@dress-up --from-mockup`
+
+**When to suggest:** Gate 4 passed, `mockup-handoff.json` written, user has reviewed **3009** and approves the mockup set (or explicitly asks to move to hi-fi).
+
+**Say:**
+
+> Mockup approved. Next: **`@dress-up --from-mockup {project-dir} --prd {project-dir}/PRD.md`** (optional `--out` for a fresh DS clone folder). That starts the raw Tailwind seed on **http://localhost:3053**, then stops for `--analyze` and `--finish`. Keep **3008/3009** open to compare lo-fi vs clickable seed.
+
+**Mid-skill (after Gate 3 only):** Do not suggest dress-up yet. Say:
+
+> Direction chosen. Continuing explore-mockup: feature buffet next, then Gate 4, then dress-up.
+
+**Do not** auto-run dress-up.
 
 ---
 

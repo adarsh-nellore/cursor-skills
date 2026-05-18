@@ -19,7 +19,7 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 # Design Ideation Skill
 
-> **Deprecated for the default pipeline.** Use **`@design-spec`** (ideation + PRD with two review gates). This skill remains for reference and legacy invocations.
+> **Deprecated for the default pipeline.** Use **`@design-spec`** (ideation + PRD with two review gates). When done with ideation-only output, suggest **`@code-ready-prd`** or restart with **`@design-spec`** for the gated path. After a full PRD exists, next is **`@explore-mockup`**.
 
 ## ⚠ Critical execution rules
 

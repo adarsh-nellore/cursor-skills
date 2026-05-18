@@ -21,6 +21,8 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 > **Deprecated for the default pipeline.** Use **`@explore-mockup`** (IA directions on port 3008, feature buffet on 3009, `mockup-handoff.json` for dress-up). This skill remains for quick buffet-only runs.
 
+**Next skill (if you still run build-lofi):** After serving `sketch.html` on 3009, suggest **`@explore-mockup`** for the full gated flow, or **`@dress-up --from-mockup`** only if `mockup-handoff.json` exists from explore-mockup Gate 4.
+
 ## What this skill produces
 
 For a given PRD, write one scrolling HTML page of N (default 6) independent feature sketches. Each sketch is a single UI frame with a value-focused blurb on its left. Output is a buffet for the designer to scan and paste into Magic Patterns (or similar) for hi-fi translation. No machine-readable handoff contract; the served page is the artifact.

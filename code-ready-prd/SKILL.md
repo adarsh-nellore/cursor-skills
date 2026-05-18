@@ -42,6 +42,12 @@ needs to generate working code without back-and-forth.
 - **Legacy upstream:** `/design-ideation` (Phase 8 handoff). `/founding-design-ideation` is legacy.
 - **Downstream:** `@explore-mockup`, `@dress-up --from-mockup`, `@build-hifi` (fast lane). Legacy: `@build-lofi`, MP + `@dress-up <url>`.
 
+## Next skill (if run standalone)
+
+**When:** Full 22-section `PRD.md` is done and user asks what is next.
+
+**Suggest:** `@explore-mockup` in the folder containing `PRD.md`. Prefer **`@design-spec`** for the full gated flow next time.
+
 ---
 
 ## How to invoke

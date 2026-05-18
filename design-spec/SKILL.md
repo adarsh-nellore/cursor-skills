@@ -143,11 +143,25 @@ Ensure no TBD placeholders. Run PRD quality checklist (code-ready-prd). Print:
 ```
 Project folder: {path}
 IDEATION.md, HANDOFF.md, PRD.md
-
-Next: @explore-mockup {path}
 ```
 
-Stop. Do not run explore or dress-up automatically.
+Then apply **Next skill** below and stop.
+
+---
+
+## Next skill (suggest when this skill is done)
+
+**Previous step in pipeline:** none (entry point).
+
+**Next step:** `@explore-mockup` in the same project folder.
+
+**When to suggest:** Gate 2 passed, `PRD.md` finalized with no TBDs, and the user confirms the spec is ready (or asks what comes next).
+
+**Say:**
+
+> Spec is locked. Next: **`@explore-mockup`** with project folder `{absolute-path}` (uses `PRD.md` and `IDEATION.md`). That skill will show IA directions on port **3008**, then feature sketches on **3009**, with two review gates before hi-fi.
+
+**Do not** auto-run explore-mockup or dress-up. Wait for the user to invoke the next skill.
 
 ---
 

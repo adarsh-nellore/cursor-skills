@@ -21,6 +21,18 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 Use **`@design-spec` → `@explore-mockup` → `@dress-up --from-mockup`** when you want review gates and PRD-vs-seed audit. Use **`@build-hifi`** only when you already have a locked PRD and want one-shot DS-native screens without explore/dress-up.
 
+## Next skill (suggest when this skill is done)
+
+**Previous:** `@design-spec` (and usually skip `@explore-mockup` / `@dress-up`).
+
+**When to suggest:** `npm run build` passes, screens listed, user confirms the hi-fi prototype is acceptable.
+
+**Say:**
+
+> Hi-fi prototype is ready (`npm run dev`). Optional next: **`@ux-review`** for a persona walkthrough and fixes. If IA or PRD fidelity was wrong, go back to **`@explore-mockup`** or **`@design-spec`** instead of dress-up.
+
+**Do not** suggest `@dress-up` unless the user explicitly wants the audit/scaffold path after a quick hi-fi pass.
+
 ## Role
 
 Generator. The user has cloned a pre-built design-system codebase
