@@ -24,6 +24,7 @@ See [PIPELINE.md](PIPELINE.md) for the full flow and preview ports.
 - **agentic-design** — where to place AI in the product
 - **build-hifi** — fast lane (PRD → DS hi-fi, no gates)
 - **tooltip-walkthrough** — demo annotations
+- **prototype-refine** — visual + mock-data polish after dress-up / build-hifi (audit must pass)
 - **ux-review** — Playwright audit + fixes
 - **humanizer**, **portfolio-voice**, **the-humanizer** — writing
 

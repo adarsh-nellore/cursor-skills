@@ -9,7 +9,8 @@ Each skill ends by **suggesting the next skill** (never auto-running it). See th
 ```
 @design-spec          → suggest @explore-mockup
 @explore-mockup       → suggest @dress-up --from-mockup (after Gate 4)
-@dress-up             → --analyze → --finish → suggest @ux-review (optional)
+@dress-up             → --analyze → --finish → suggest @prototype-refine or @ux-review (optional)
+@prototype-refine     → suggest @ux-review (optional)
 ```
 
 ## Preview ports (run side by side)

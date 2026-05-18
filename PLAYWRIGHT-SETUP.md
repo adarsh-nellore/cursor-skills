@@ -31,5 +31,6 @@ Claude Code tool names like `mcp__playwright__playwright_navigate` do **not** ex
 | Skill | When |
 |-------|------|
 | `dress-up` | Stage 2 Beat 2.2 Agent B |
+| `prototype-refine` | Phase 0 anchor screenshots |
 | `ux-review` | Default walkthrough flow |
 | `tooltip-walkthrough` | Optional hover verification |
