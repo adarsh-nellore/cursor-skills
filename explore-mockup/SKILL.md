@@ -17,8 +17,9 @@ description: >
 ## What this skill produces
 
 1. **IA directions** — `directions.json`, `DIRECTIONS.md`, preview at **http://localhost:3008/directions.html**
-2. **Feature buffet** — `concepts.json`, preview at **http://localhost:3009/sketch.html**
-3. **Handoff** — `mockup-handoff.json` after user approval (Gate 4)
+2. **Screen inventory** — `screen-inventory.json` (PRD §9 + §10, including intermediate states)
+3. **Feature buffet** — `concepts.json` with **multi-state** structured lo-fi (modal frame + CTA slot when applicable), preview at **http://localhost:3009/sketch.html**
+4. **Handoff** — `mockup-handoff.json` after user approval (Gate 4), including inventory path and dress-up flags
 
 Front-end only (HTML + JSON). No React. No Magic Patterns required.
 
@@ -95,6 +96,44 @@ Start preview on **3008**. **Gate 3** — `AskQuestion`: pick direction (allow "
 
 Record `chosen_direction_id` in main-thread memory.
 
+### Beat 1.5 — Screen inventory (main thread, mandatory)
+
+After Gate 3, before Beat 3 concepts. Read PRD **§9** (state transitions / routing) and **§10** (UI surface inventory). Write `{project-dir}/screen-inventory.json`:
+
+```json
+{
+  "product": "...",
+  "cornerstone_route": "/from-prd-section-19",
+  "views": [
+    {
+      "id": "analyze-run",
+      "path": "/demo/word?view=analyze-run",
+      "type": "loading",
+      "label": "Analyze in progress",
+      "prd_sections": ["§9", "§17"]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/onboarding/assist/loading",
+      "type": "temporal",
+      "label": "Assist loading",
+      "prd_sections": ["§9", "§12"]
+    }
+  ]
+}
+```
+
+**Row `type` values (use exactly one per row):** `happy` | `loading` | `confirm` | `empty` | `error` | `permission` | `success-bridge` | `temporal`.
+
+**Hard rules:**
+
+- Every PRD §9 transition that changes what the persona sees must have a `views[]` or `routes[]` row. Happy path alone is insufficient.
+- `views[]` = cornerstone overlays (`?view=`, `?modal=`) or in-app panes on the cornerstone route.
+- `routes[]` = full App Router paths (invite, login, browser setup, assist, sync, etc.).
+- For Peer-style onboarding / Word-bridge PRDs, cross-check against a canonical spine: invite → SSO → accept → Word entry → hook → sources modal → **analyze-run** → results preview → repo → sources → readiness → tailor → assist loading → assist verify → sync → complete → reveal → steady. Add any PRD-required row missing from that spine.
+- Do not proceed to Beat 3 until `screen-inventory.json` exists and lists at least one `loading`, one `confirm`, and every §10 surface the PRD names for the primary persona's critical path.
+
 ### Beat 2 — Asset copy
 
 ```bash
@@ -104,12 +143,32 @@ cp ~/.cursor/skills/explore-mockup/{sketch.html,lofi.js,lofi.css,REGIONS.md,dire
 
 ### Beat 3 — Feature concepts (parallel agents)
 
-For the **chosen direction only**, decide N concepts (default 6, range 4–8). Each concept:
+For the **chosen direction only**, decide N concepts (default 6, range 4–8). Map concepts to **screen-inventory rows** where possible; at least **half** of concepts must cover an intermediate type (`loading`, `confirm`, `error`, `permission`, or `success-bridge`), not only happy-path chrome.
+
+Each concept object includes:
 
 - `id`, `title`, `blurb` (≤30 words, two sentences, third person)
-- Layout hint (`queue-table` / `box.xl` / `side-by-side`)
+- `states`: array of 2–3 state ids, e.g. `["default", "loading", "confirm"]` (required)
+- `modal_frame`: `true` when the concept is a centered overlay / Word modal / pre-flight dialog (default `false`)
+- `primary_cta_label`: string for the forward CTA pill when `modal_frame` is true (e.g. `"Continue in Word"`)
+- `inventory_refs`: optional array of `screen-inventory.json` view/route ids this concept illustrates
+- `lofi`: region tree using `REGIONS.md` (include **`state-panel`** per state when `states.length` > 1)
 
-Spawn N `Task` agents in **one batch**. Each writes `{project-dir}/_concept{N}.json` using `REGIONS.md` vocabulary (same template as build-lofi v4).
+**Structured lo-fi (required when `modal_frame` or `states.length` > 1):**
+
+- Wrap the sketch in **`modal-frame`** (fixed width, same footprint across states).
+- Show **`cta-primary`** in the footer slot on every state that has a forward action.
+- Stack **`state-panel`** regions (one per state, labeled DEFAULT / LOADING / CONFIRM) inside one concept card on 3009.
+
+Spawn N `Task` agents in **one batch**. Each writes `{project-dir}/_concept{N}.json` using `REGIONS.md` vocabulary. Agents must read `{project-dir}/screen-inventory.json` and cite matching rows in `inventory_refs`.
+
+**Agent prompt snippet (append to each Beat 3 task):**
+
+```
+Read {project-dir}/screen-inventory.json. Your concept must cover at least one inventory row via inventory_refs.
+If modal_frame: use modal-frame + cta-primary regions; render all states[] as labeled state-panel children.
+No upward-floating dot animations in loading state-panels; use a progress bar skel + static label line only.
+```
 
 ### Beat 4 — Merge + buffet preview
 
@@ -126,9 +185,18 @@ On approval, write `mockup-handoff.json`:
   "cornerstone_route": "/from-prd-section-19",
   "prd_path": "./PRD.md",
   "project_dir": "{absolute project-dir}",
+  "screen_inventory_path": "{absolute project-dir}/screen-inventory.json",
+  "required_views": ["analyze-run", "reveal"],
+  "required_routes": ["/invite", "/onboarding/assist/loading", "/onboarding/sync"],
+  "overlay_pattern": "fixed-modal-shell",
+  "cta_nav_highlight": true,
+  "demo_flow_spine": true,
   "explore_ports": { "directions": 3008, "buffet": 3009 }
 }
 ```
+
+- `required_views` / `required_routes`: copied from `screen-inventory.json` critical-path rows (all non-optional intermediates). Dress-up Stage 1a uses these for the completeness gate.
+- `overlay_pattern`, `cta_nav_highlight`, `demo_flow_spine`: always set as shown for modal-heavy / onboarding products; dress-up reads `references/onboarding-patterns/` (navigation, motion, CTAs).
 
 ### Stop condition
 
@@ -136,8 +204,8 @@ Print:
 
 1. **http://localhost:3008/directions.html** (if still running)
 2. **http://localhost:3009/sketch.html**
-3. Path to `mockup-handoff.json`
-4. One-line concept list
+3. Path to `screen-inventory.json` and `mockup-handoff.json`
+4. One-line concept list (note which concepts are multi-state / modal_frame)
 
 Then apply **Next skill** below and stop.
 
@@ -167,6 +235,7 @@ Then apply **Next skill** below and stop.
 
 - `SKILL.md`, `REGIONS.md`, `sketch.html`, `lofi.js`, `lofi.css`
 - `directions.html`, `directions.js`
+- Downstream patterns live in `~/.cursor/skills/dress-up/references/onboarding-patterns/` (handoff flags point there)
 
 ---
 

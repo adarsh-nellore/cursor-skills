@@ -1,0 +1,49 @@
+{
+  "$schema_note": "Written by explore-mockup Beat 1.5; copied to <out>/.dress-up/screen-inventory.json at dress-up Stage 1a.",
+  "product": "Product name from PRD",
+  "cornerstone_route": "/demo/word",
+  "views": [
+    {
+      "id": "feedback",
+      "path": "/demo/word?view=feedback",
+      "type": "confirm",
+      "label": "Sources before run check",
+      "prd_sections": ["§9", "§10"]
+    },
+    {
+      "id": "analyze-run",
+      "path": "/demo/word?view=analyze-run",
+      "type": "loading",
+      "label": "Gap check in progress",
+      "prd_sections": ["§9", "§17"]
+    },
+    {
+      "id": "reveal",
+      "path": "/demo/word?view=reveal",
+      "type": "success-bridge",
+      "label": "Post-sync margin reveal",
+      "prd_sections": ["§9", "§12"]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/invite",
+      "type": "happy",
+      "label": "Pilot invite",
+      "prd_sections": ["§10"]
+    },
+    {
+      "path": "/onboarding/assist/loading",
+      "type": "loading",
+      "label": "Assist agent working",
+      "prd_sections": ["§9", "§17"]
+    },
+    {
+      "path": "/onboarding/sync",
+      "type": "confirm",
+      "label": "Send to Word consent",
+      "prd_sections": ["§9", "§12"]
+    }
+  ],
+  "critical_path_types": ["loading", "confirm", "permission", "error", "success-bridge"]
+}

@@ -73,6 +73,25 @@ time.
 Phase 1 places components SIMPLY (raw `<div className="...">` wrappers
 are fine) so Phase 2 can do heavier visual lifting.
 
+## Prototype surface patterns (onboarding / modal-heavy PRDs)
+
+When the PRD describes onboarding, Word-bridge, or modal-heavy pre-flight, apply these in **Stage 1a seed** and preserve through Stage 4. Reference bundle: `references/onboarding-patterns/` under this skill (`~/.cursor/skills/dress-up/` or `~/.claude/skills/dress-up/`).
+
+| Pattern | File | Rule |
+|---------|------|------|
+| Fixed overlay shell | `WORD_MODAL_SHELL.md` | One shell; all `?view=` modal states share `max-w-md` + `min-h-[460px]`; sticky footer |
+| Nav CTA highlight | `CTA_NAV_HIGHLIGHT.md` | `LinkButton` `navHighlight` + `cta-nav-highlight-wrap` (white + coral ring) on every forward primary |
+| Navigation + CTAs | `NAVIGATION_AND_CTAS.md` | `LinkButton` for all route changes; disabled = no `<Link>`; labels match `href`; optional `FlowIndex` spine |
+| Motion + scroll | `MOTION_AND_SCROLL.md` | `h-dvh` scroll lock; pane-only `anim-fade-in*`; opacity-only pane transitions; no framer on modals |
+| Modal loading | `MODAL_LOADING.md` | `ProgressBar` + label only in overlays; no `ThinkingIndicator` dots |
+| Screen inventory | `SCREEN_INVENTORY_TEMPLATE.json` | PRD §9 + §10 rows before seed; gate on missing intermediates |
+
+**Hard requirements:**
+
+1. Intermediate screens are explicit `?view=` or routes before Checkpoint #1, not implied by cornerstone alone.
+2. `mockup-handoff.json` from explore-mockup must include `screen_inventory_path`, `required_views`, `required_routes`, `overlay_pattern`, `cta_nav_highlight`, and `demo_flow_spine` when the product is a multi-step demo.
+3. Checkpoint #1: user clicks every forward primary CTA on the spine; no dead buttons, no wrong `href`, no full-page scroll on Word/browser shells.
+
 ## Compute is liberal; wall-clock is the constraint
 
 Spawn MORE parallel agents whenever it actually reduces wall-clock
@@ -377,16 +396,65 @@ Save inventory to `<out>/.dress-up/inventory.json`.
 
 **Only when `bootstrap-done.json` has `"mode": "from-mockup"`.** Skip for MP path.
 
-1. Read `mockup-handoff.json`, `<mockup_project_dir>/concepts.json`, PRD §9–10–14–19.
-2. Map approved concepts to Next.js routes (cornerstone route from handoff; overlays as `?modal=` on cornerstone per PRD modal-heavy pre-flight).
-3. Spawn parallel `Task` agents — one per route. Each writes **raw Tailwind** `src/app/**/page.tsx` using **Stage 3 style vocabulary** (no DS primitives).
-4. One blocking agent seeds `src/lib/mock-data.ts` + `src/lib/types.ts` from PRD §15/18 (minimal realistic rows).
-5. `npm install` if needed. `npm run build`.
-6. Start `PORT=3053 npm run dev` in background. Record PID in `stage1-done.json`.
-7. Print **Preview panel** (3008/3009/3053).
-8. Suggest **Next skill: After Stage 1** (see above). **STOP** — wait for `--analyze`.
+### Beat 1a.0 — Screen inventory (main thread, blocking)
+
+1. Read `mockup-handoff.json`, PRD §9–10–19, `<mockup_project_dir>/screen-inventory.json` (from explore-mockup Beat 1.5).
+2. Copy or merge into `<out>/.dress-up/screen-inventory.json` (schema: `references/onboarding-patterns/SCREEN_INVENTORY_TEMPLATE.json`).
+3. Build agent batch plan from **every** `views[]` and `routes[]` row plus `required_views` / `required_routes` from handoff.
+4. **Gate (hard stop):** For each critical-path row with `type` in `loading` | `confirm` | `error` | `permission` | `success-bridge`, verify the batch plan includes that `?view=` or route. If any are missing, print the missing ids/paths and **STOP**. Do not ship a cornerstone-only seed.
+
+### Beat 1a.1 — Parallel seed agents
+
+1. Read `concepts.json` for layout hints only; **inventory rows drive completeness**.
+2. Spawn parallel `Task` agents — **one per inventory route row** (and cornerstone dispatcher agent if multiple `views[]` on one route). Each writes **raw Tailwind** using **Stage 3 style vocabulary** (no DS primitives).
+3. **Every seed agent must read** before coding:
+   - `references/onboarding-patterns/WORD_MODAL_SHELL.md`
+   - `references/onboarding-patterns/CTA_NAV_HIGHLIGHT.md`
+   - `references/onboarding-patterns/NAVIGATION_AND_CTAS.md`
+   - `references/onboarding-patterns/MOTION_AND_SCROLL.md`
+   - `references/onboarding-patterns/MODAL_LOADING.md`
+4. Cornerstone with multiple `?view=` values: one `page.tsx` dispatcher (e.g. `WordDemoViews`) implementing **all** inventory `views[]` inside `WordModalShell` where `modal_frame` concepts apply.
+5. One blocking agent seeds `src/lib/mock-data.ts` + `src/lib/types.ts` from PRD §15/18.
+6. One blocking agent (when `demo_flow_spine` is true in handoff): `demo-flow-notes.ts` + `FlowIndex` in root layout per `NAVIGATION_AND_CTAS.md`.
+7. Seed agent must add to `src/app/globals.css`: `cta-nav-highlight-wrap` (`CTA_NAV_HIGHLIGHT.md`), `scroll-tame`, `anim-fade-in*` (`MOTION_AND_SCROLL.md`).
+8. `npm install` if needed. `npm run build`.
+9. Run `bash ~/.cursor/skills/dress-up/bin/smoke-onboarding-patterns.sh` (or claude path); fix any FAIL before checkpoint.
+10. Start `PORT=3053 npm run dev` in background. Record PID + `screen_inventory_path` in `stage1-done.json`.
+11. Print **Preview panel** (3008/3009/3053).
+12. Print Checkpoint #1 message (below). Suggest **Next skill: After Stage 1**. **STOP** — wait for `--analyze`.
+
+**Checkpoint #1 (from-mockup):**
+
+```
+Stage 1a complete. Dev server: http://localhost:3053
+
+→ Walk the FULL spine in <out>/.dress-up/screen-inventory.json
+  (every loading, confirm, and bridge view), not only the cornerstone.
+  Click every forward primary CTA — each must navigate (LinkButton, correct href).
+  Verify: modal shells same size across ?view=; nav highlight ring on primaries;
+  only inner panes scroll (not full page); pane transitions feel smooth, no modal dot bounce.
+
+When ready: @dress-up --from-mockup <project-dir> --analyze
+```
 
 **Do not kill ports 3008 or 3009.**
+
+### Stage 1a seed agent prompt (append to each Task)
+
+```
+Read dress-up/references/onboarding-patterns/WORD_MODAL_SHELL.md,
+CTA_NAV_HIGHLIGHT.md, NAVIGATION_AND_CTAS.md, MOTION_AND_SCROLL.md, and MODAL_LOADING.md before writing JSX.
+
+Your inventory row: {ROW_JSON}
+Handoff: overlay_pattern={overlay_pattern}, cta_nav_highlight={cta_nav_highlight}, demo_flow_spine={demo_flow_spine}
+
+- Modal/overlay views: WordModalShell layout (fixed max-w-md + min-h, sticky footer).
+- Forward primary CTAs: LinkButton with navHighlight + globals.css wrap classes; disabled = Button only, no Link.
+- Every primary label must match the next inventory href (grep before finish).
+- Page shells: h-dvh overflow-hidden; scroll-tame on pane bodies only (MOTION_AND_SCROLL.md).
+- Pane views: anim-fade-in stagger and/or opacity-only AnimatePresence; modal views: instant swap, no y-motion.
+- Loading overlays: ProgressBar + static label; no ThinkingIndicator.
+```
 
 ---
 
@@ -526,8 +594,9 @@ Use Write. Report: "Ported {LOC} LOC" in one line at end.
 Stage 1 complete in <wall-clock>. <N> routes ported.
 Dev server: http://localhost:3053
 
-→ Open it. You'll see the MP app rendered in Next.js as-is.
-  This is the "seed" — no changes, no design system applied.
+→ Open it. You'll see the seed rendered in Next.js (MP port or mockup build).
+  Walk every row in <out>/.dress-up/screen-inventory.json when mode is
+  from-mockup, not only the cornerstone.
 
 When you're ready for analysis + scaffolding (Stage 2-3), run:
   @dress-up --from-mockup <project-dir> --analyze
@@ -629,6 +698,17 @@ PRD §10 (UI Surface Inventory) vs what {OUT_ROOT}/src/app/ ships.
 List missing routes with PRD § + persona use case. List extra routes
 not in PRD.
 
+## Intermediate / transition surfaces
+Compare PRD §9 (state transitions) and `<out>/.dress-up/screen-inventory.json`
+(if present) vs implemented `?view=` / `?modal=` and routes in `src/app/`.
+Table:
+
+| Surface id / path | PRD type (loading/confirm/…) | Implemented | Where in source |
+|-------------------|------------------------------|-------------|-----------------|
+
+Flag every missing intermediate on the critical path. These become
+**Structural** findings (default-on at dialog), not Polish.
+
 ## Component inventory gaps
 PRD §14 (Component Inventory) diffed against src/components/peer/.
 Per missing component: PRD § + what it does + where it goes.
@@ -705,6 +785,12 @@ description + the lofi concepts list.
 5. Dismiss a conflict with a reason
 6. Apply-to-all → propagation report with blocked section
 7. Try to access /submissions/{ID}/audit as the writer role
+
+**Onboarding / Word-bridge demos** (when `demo_flow_spine` in handoff or
+`demo-flow-notes.ts` exists): walk `DEMO_FLOW_CANONICAL` in order via
+`FlowIndex` or inventory hrefs. On each step: click the **forward primary
+CTA** and confirm navigation (not only visual review). Log friction type
+`dead-end UI` when a primary does not navigate or `href` lands on wrong step.
 
 ## Per flow
 
@@ -1122,6 +1208,14 @@ to re-read the PRD.
 guess. If the scope excerpt is ambiguous on something, treat that as
 a scope bug and surface it in your output instead of inventing.
 
+### Onboarding pattern reference (modal / overlay / nav scope items)
+If the scope item adds or modifies a centered overlay, Word modal,
+`?view=` dispatcher, primary CTA, or demo flow chrome, read BEFORE coding:
+`WORD_MODAL_SHELL.md`, `NAVIGATION_AND_CTAS.md`, `MOTION_AND_SCROLL.md`,
+and `MODAL_LOADING.md` under `dress-up/references/onboarding-patterns/`.
+Add to scope item when missing, e.g.:
+`pattern reference: dress-up/references/onboarding-patterns/WORD_MODAL_SHELL.md`
+
 ### Pattern reference (only if scope item names one)
 If your scope item contains a `pattern reference: <file>:<lines>` entry,
 READ that file region BEFORE writing any new component code. Mimic the
@@ -1389,18 +1483,27 @@ truth.
 - No raw `flex items-* gap-N`. Use <Cluster gap="...">.
 - No <Button href>. Use <LinkButton href>.
 - Domain vocabulary as written in Stage 3 — DO NOT rewrite copy.
+- **Preserve** `src/app/globals.css` rules for `cta-nav-highlight-wrap` /
+  `cta-nav-highlight` from Stage 1a (see `references/onboarding-patterns/CTA_NAV_HIGHLIGHT.md`).
+- **Preserve** `LinkButton` `navHighlight` prop on forward primary CTAs.
+- **Preserve** fixed modal dimensions (`max-w-md`, `min-h-[460px]`, footer
+  `min-h-[88px]`) on overlay shells through `<Card>` translation.
 
 ## Motion rules
 
 - Page entrance stagger: top-level sections get className "anim-fade-in",
-  "anim-fade-in-1", "anim-fade-in-2", ... by depth.
+  "anim-fade-in-1", "anim-fade-in-2", ... by depth. Preserve these utilities
+  in `globals.css` if Stage 1a added them.
 - Card / Button / TableRow primitives carry hover transitions built-in.
-  Don't override.
-- DO NOT import framer-motion in NEW code. If the Stage 3 file imports
-  it (preserved from MP), strip it now — replace `motion.div` with
-  regular `<div>` + `anim-fade-in*` classes.
+  Don't override. Linked cards may use subtle hover lift per MOTION_AND_SCROLL.md.
+- **Default:** DO NOT import framer-motion in NEW code. Strip MP `motion.div`
+  to `<div>` + `anim-fade-in*` unless onboarding exception below applies.
+- **Onboarding exception:** keep framer only for `FlowIndex` and cornerstone
+  **pane** `AnimatePresence` (opacity-only, no `y` on modal view keys). See
+  `references/onboarding-patterns/MOTION_AND_SCROLL.md`.
+- Preserve `scroll-tame` and shell `overflow-hidden` classes through translation.
 - No inline `style={{ animation: ... }}` or `style={{ transition: ... }}`.
-- No new @keyframes.
+- No new @keyframes beyond `cta-nav-ring` / `ads-fade-in` already in globals.
 
 ## Voice rules (preserve, do not rewrite)
 
@@ -1527,6 +1630,12 @@ Print **Preview panel**. Suggest **Next skill: After Stage 4** (`@ux-review` opt
 - After Stage 1: stop, suggest `--analyze`; see [Next skill by checkpoint](#next-skill-by-checkpoint).
 - After Stage 3: stop, suggest `--finish`.
 - After Stage 4: stop, suggest `@ux-review` optional; pipeline complete.
+
+## Bundled files
+
+- `SKILL.md`, `bin/mp-to-next.mjs`, `bin/inventory-ds.mjs`, `bin/stage4-primitive-check.mjs`
+- `references/onboarding-patterns/` — modal, CTA, navigation, motion, inventory docs
+- `bin/smoke-onboarding-patterns.sh` — run after editing this skill or references
 
 ## Out of scope
 

@@ -117,6 +117,31 @@ Filter pill row in a small grey bar.
 ### `tab-row`
 - `tabs[]` — array of tab labels; first is active
 
+### `modal-frame` (structured lo-fi — explore-mockup Beat 3)
+Fixed-size centered overlay shell. All states in a multi-state concept share this frame so dress-up does not ship jumping modals.
+- `tooltip`
+- `width`: `'md'` (default, ~28rem) | `'sm'`
+- `children[]` — usually `state-panel` regions or a single inner `box`
+
+Renderer should use a bordered card with consistent min-height (~320px) and internal scroll area.
+
+### `cta-primary` (structured lo-fi)
+Visible forward-navigation CTA slot in a modal footer or pane footer.
+- `tooltip`
+- `text` — button label (from concept `primary_cta_label` when set)
+- `highlight`: `true` (default) — render with a double ring (white inner, coral outer) so the CTA is obvious on coral buttons in hi-fi
+
+Place inside `modal-frame` footer or below the last `state-panel`.
+
+### `state-panel` (structured lo-fi — multi-state concepts)
+One labeled state within a concept sketch.
+- `tooltip`
+- `stateId` — matches an entry in concept `states[]` (e.g. `loading`, `confirm`)
+- `label` — uppercase chip text shown above the panel (e.g. `LOADING`)
+- `children[]` — regions for that state only
+
+**Loading state panels:** use `box` + progress skel (`{skel: 80}`) + one `line` label. Do **not** use three pulsing dots or `agent-block` for modal loading (reads as "floating dots" in hi-fi).
+
 ## Top-level concept object
 
 Each concept in `concepts.json` is:
@@ -126,6 +151,10 @@ Each concept in `concepts.json` is:
   "id": "kebab-id",
   "title": "Sentence-case title",
   "blurb": "Two-sentence value-focused blurb.",
+  "states": ["default", "loading", "confirm"],
+  "modal_frame": true,
+  "primary_cta_label": "Continue in Word",
+  "inventory_refs": ["analyze-run"],
   "lofi": [ /* region tree */ ]
 }
 ```

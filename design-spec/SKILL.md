@@ -115,7 +115,7 @@ Read `HANDOFF.md`. Generate full **22-section** PRD per code-ready-prd rules:
 
 **Critical mappings**
 
-- Cornerstone → §9 (cornerstone-first IA, not a flat nav table) and §10 (UI surface inventory)
+- Cornerstone → §9 (cornerstone-first IA, not a flat nav table; **enumerate every transition surface** including loading, confirm, error, and permission steps, not only happy path) and §10 (UI surface inventory)
 - Agents → §13, §14, §17
 - Objects/states → §15, §16
 - Decisions → §8; out of scope → §6
