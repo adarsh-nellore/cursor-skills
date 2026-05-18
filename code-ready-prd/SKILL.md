@@ -63,6 +63,14 @@ needs to generate working code without back-and-forth.
 
 ---
 
+## Output delivery
+
+Always write the full PRD to `./PRD.md` in the project working directory.
+Use plain markdown only — pipe-syntax tables for Sections 14–22, fenced
+code blocks, plain lists. Report the local file path when done.
+
+---
+
 ## Operating modes
 
 ### Mode 1: Full PRD generation
