@@ -19,6 +19,8 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 # Design Ideation Skill
 
+> **Deprecated for the default pipeline.** Use **`@design-spec`** (ideation + PRD with two review gates). This skill remains for reference and legacy invocations.
+
 ## ⚠ Critical execution rules
 
 1. **NEVER call the Anthropic API.** All phase output is produced by Claude directly in the

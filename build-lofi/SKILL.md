@@ -19,6 +19,8 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 # build-lofi v4
 
+> **Deprecated for the default pipeline.** Use **`@explore-mockup`** (IA directions on port 3008, feature buffet on 3009, `mockup-handoff.json` for dress-up). This skill remains for quick buffet-only runs.
+
 ## What this skill produces
 
 For a given PRD, write one scrolling HTML page of N (default 6) independent feature sketches. Each sketch is a single UI frame with a value-focused blurb on its left. Output is a buffet for the designer to scan and paste into Magic Patterns (or similar) for hi-fi translation. No machine-readable handoff contract; the served page is the artifact.

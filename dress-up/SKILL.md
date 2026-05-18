@@ -89,14 +89,32 @@ Concretely:
 
 ## Pipeline composition
 
-- **Upstream:** `/design-ideation` → `/code-ready-prd` → `./PRD.md` (pass to `--prd`).
-  Typical path: `/build-lofi` sketches → Magic Patterns → `/dress-up --prd ./PRD.md`.
-- **Parallel path:** `/build-hifi` when prototyping directly in the design system (no MP import).
+- **Default:** `/design-spec` → `/explore-mockup` → `/dress-up --from-mockup <project-dir> --prd ./PRD.md`
+- **Legacy MP:** `/dress-up <github-url> --prd ./PRD.md`
+- **Fast lane:** `/build-hifi` (no explore/dress-up gates)
+
+## Preview ports (side by side)
+
+| Port | Source |
+|------|--------|
+| 3008 | explore-mockup directions |
+| 3009 | explore-mockup feature buffet |
+| 3053 | dress-up Next.js prototype |
+
+**Never kill 3008 or 3009** when starting dress-up. After each dress-up checkpoint, print the **Preview panel** (see below).
 
 ## When to run
 
+**`--from-mockup` path (preferred):**
+
+- `mockup-handoff.json` exists and Gate 4 was approved in explore-mockup
+- `~/Projects/adarsh-design-system` cloned
+- `--prd` points at `./PRD.md`
+
+**MP path:**
+
 - An MP prototype exists on GitHub. Pure HTML or Figma-only doesn't
-  qualify.
+  qualify without `--from-mockup`.
 - User has the peer-design-system cloned at
   `~/Projects/adarsh-design-system`.
 - A PRD (`--prd <path>`) is strongly recommended — use `./PRD.md` from
@@ -108,14 +126,36 @@ Concretely:
 - The MP IA is wrong AND user wants full redesign with no MP seed —
   use `/build-hifi` instead.
 - Source is Vue / Svelte / plain HTML — out of scope.
-- Static sketch only — use `/build-lofi`.
+- Static sketch only — use `/explore-mockup`.
 
 ## Inputs and invocation
 
-Three commands cover the whole pipeline. Each writes a checkpoint file
-in `<out>/.dress-up/` so the next invocation knows what's done.
+Each mode writes checkpoints in `<out>/.dress-up/`.
 
-### Stage 0-1 (initial)
+### Preview panel (print after Stage 1, 3, 4)
+
+```
+Lo-fi directions: http://localhost:3008/directions.html  (if explore still running)
+Lo-fi buffet:     http://localhost:3009/sketch.html
+Hi-fi prototype:  http://localhost:3053
+```
+
+Offer `open_resource` for each URL when MCP available.
+
+### Stage 0-1 — from approved mockup (preferred)
+
+```
+/dress-up --from-mockup <project-dir> [--prd <path>] [--brief <path>] [--out <folder>]
+```
+
+- `<project-dir>` (required): explore-mockup output folder (`concepts.json`, `mockup-handoff.json`, `PRD.md`).
+- `--prd` (optional): defaults to `<project-dir>/PRD.md`.
+- `--out` (optional): DS clone destination. Default `~/Documents/{slug}-dressup-YYYY-MM-DD/`.
+- Verifies `mockup-handoff.json` exists. If missing, stop: "Run @explore-mockup and approve Gate 4 first."
+
+Runs **Stage 0 (mockup bootstrap)** + **Stage 1a (local seed)**. Starts dev server **3053**. Does not clone MP.
+
+### Stage 0-1 — Magic Patterns (legacy)
 
 ```
 /dress-up <github-url> [--prd <path>] [--brief <path>] [--out <folder>]
@@ -135,6 +175,7 @@ Runs Stage 0 + Stage 1. Starts dev server. Prints Stage 2 command.
 ### Stage 2-3 (analysis + scaffolding)
 
 ```
+/dress-up --from-mockup <project-dir> --analyze
 /dress-up <github-url> --analyze [--prd <path>] [--brief <path>]
 ```
 
@@ -147,6 +188,7 @@ doesn't need to be re-passed. Re-pass to override.
 ### Stage 4 (DS translation)
 
 ```
+/dress-up --from-mockup <project-dir> --finish [--notes <path>]
 /dress-up <github-url> --finish [--notes <path>] [--notes-text "..."]
 ```
 
@@ -173,6 +215,35 @@ Optional `--notes` / `--notes-text`: user's feedback after Checkpoint
 ---
 
 # STAGE 0 — Bootstrap (~30s, deterministic, no LLM)
+
+## Mode A — `--from-mockup <project-dir>`
+
+1. Parse args. Read `<project-dir>/mockup-handoff.json`. Error if missing or `approved_concept_ids` empty.
+2. Resolve `<slug>` from PRD product name (kebab-case).
+3. Resolve `<out>` folder. If exists on fresh run, error and stop.
+4. `cp -r ~/Projects/adarsh-design-system <out>`. Skip `node_modules`.
+5. Rename `<out>/package.json` `name` to `<slug>`.
+6. Strip showcase pages; clear mock-data stub.
+7. Disable audit: rename `prebuild` → `prebuild:audit-disabled`.
+8. Write `<out>/.dress-up/bootstrap-done.json`:
+
+```json
+{
+  "stage": 0,
+  "mode": "from-mockup",
+  "mockup_project_dir": "<absolute project-dir>",
+  "mockup_handoff": "<absolute path to mockup-handoff.json>",
+  "lofi_concepts_path": "<project-dir>/concepts.json",
+  "out": "<absolute out>",
+  "slug": "<slug>",
+  "prd_path": "<absolute prd>",
+  "brief_path": "<absolute or null>"
+}
+```
+
+Skip MP clone. Continue to **Stage 1a**.
+
+## Mode B — `<github-url>` (MP)
 
 1. Parse args. Resolve `<slug>` from the GitHub repo name (kebab-case).
 2. Resolve `<out>` folder. If it exists, error and stop.
@@ -238,6 +309,26 @@ Common additions: `zustand`, `react-hot-toast`, `tailwind-merge`,
 `lucide-react`. **NEVER add `react-router-dom`** — Next.js replaces it.
 
 Save inventory to `<out>/.dress-up/inventory.json`.
+
+---
+
+# STAGE 1a — Local seed from mockup (~3-5 min, parallel)
+
+**Only when `bootstrap-done.json` has `"mode": "from-mockup"`.** Skip for MP path.
+
+1. Read `mockup-handoff.json`, `<mockup_project_dir>/concepts.json`, PRD §9–10–14–19.
+2. Map approved concepts to Next.js routes (cornerstone route from handoff; overlays as `?modal=` on cornerstone per PRD modal-heavy pre-flight).
+3. Spawn parallel `Task` agents — one per route. Each writes **raw Tailwind** `src/app/**/page.tsx` using **Stage 3 style vocabulary** (no DS primitives).
+4. One blocking agent seeds `src/lib/mock-data.ts` + `src/lib/types.ts` from PRD §15/18 (minimal realistic rows).
+5. `npm install` if needed. `npm run build`.
+6. Start `PORT=3053 npm run dev` in background. Record PID in `stage1-done.json`.
+7. Print **Preview panel** (3008/3009/3053). **STOP** — wait for `--analyze`.
+
+**Do not kill ports 3008 or 3009.**
+
+---
+
+# STAGE 1 — MP routing port (Mode B only)
 
 ## Beat 1.2 — Run the mp-to-next codemod (~5s, no LLM)
 
@@ -435,11 +526,12 @@ tool-call message. Wall-clock equals the slower agent.
 ### Agent A — Spec audit
 
 ```
-You are auditing a ported Magic Patterns prototype against its PRD
-and (if present) a brief notes file + lofi sketch JSON. Output is a
-section-by-section spec audit. NO usability commentary (that's a
-sibling agent's job; you'd be guessing because you don't have a
-browser).
+You are auditing the prototype seed (Magic Patterns port OR local
+mockup seed from explore-mockup) against its PRD and (if present) a
+brief notes file + lofi sketch JSON. Output is a section-by-section
+spec audit. NO usability commentary (that's a sibling agent's job).
+Note seed source in the report title: "Spec Audit — {SLUG} (PRD-seed)"
+or "(PRD-MP)".
 
 ## Inputs to read
 
@@ -494,15 +586,15 @@ in the Workflow or PRD-cited category at synthesis depending on
 whether the PRD §21 row is explicit and whether the missing case
 breaks a success criterion.
 
-## PRD-MP drift
-Places PRD and MP code DISAGREE (not just where MP omits). Per drift:
+## PRD-seed drift
+Places PRD and seed code DISAGREE (not just gaps). Per drift:
 - PRD §N says: <verbatim>
 - MP shows: <observation with file:line>
 - Possible reasons: (a) user iterated MP since PRD, (b) MP wasn't
   built to spec
 - Options: (1) keep MP, (2) conform to PRD, (3) log as assumption
 
-If no contradictions: "No PRD-MP drift detected."
+If no contradictions: "No PRD-seed drift detected."
 
 ## Mock-data depth
 PRD §15 (Data Schema) + §18 (Mock Data Examples) name specific

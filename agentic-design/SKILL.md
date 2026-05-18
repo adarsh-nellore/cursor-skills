@@ -1,7 +1,7 @@
 ---
 name: agentic-design
 description: >
-  Prioritize WHERE agentic functionality should land in a product before implementation. Walks through 4 beats: JTBD-beat decision density, agent-state coverage gaps, the "remove test," and background-vs-foreground placement. Produces a tiered placement plan (Tier 1 critical-path / Tier 2 supporting / Tier 3 skip) in ./AGENTIC-PLACEMENT.md. Use BEFORE adding AI features to a prototype, not after. Output composes downstream with /tooltip-walkthrough (annotate the placements in the prototype) and /ux-review (audit-and-fix loop). Triggers: "where should AI go", "prioritize AI features", "agentic placement", "agent design principles", "should this have AI", "AI feature prioritization". Composes upstream with /code-ready-prd (which composes from /design-ideation). Works in Cursor Agent.
+  Prioritize WHERE agentic functionality should land in a product before implementation. Walks through 4 beats: JTBD-beat decision density, agent-state coverage gaps, the "remove test," and background-vs-foreground placement. Produces a tiered placement plan (Tier 1 critical-path / Tier 2 supporting / Tier 3 skip) in ./AGENTIC-PLACEMENT.md. Use BEFORE adding AI features to a prototype, not after. Output composes downstream with /tooltip-walkthrough (annotate the placements in the prototype) and /ux-review (audit-and-fix loop). Triggers: "where should AI go", "prioritize AI features", "agentic placement", "agent design principles", "should this have AI", "AI feature prioritization". Composes upstream with /code-ready-prd (which composes from /design-spec). Works in Cursor Agent.
 ---
 
 ## Cursor runtime
@@ -282,7 +282,7 @@ incomplete.
 
 - **Upstream**: `/code-ready-prd` produced `./PRD.md` + JTBD that this
   skill consumes. `/code-ready-prd` itself composes from
-  `/design-ideation` (brief → personas + pain points → PRD handoff).
+  `/design-spec` (brief → personas + pain points → PRD handoff).
 - **Reference**: `/agent-states` is loaded into Beat 2 sub-agents
   for the 13-state coverage rubric.
 - **Downstream**: `/tooltip-walkthrough` reads `./AGENTIC-PLACEMENT.md`

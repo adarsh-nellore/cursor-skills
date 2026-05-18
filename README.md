@@ -1,37 +1,48 @@
-# Design pipeline skills (Cursor)
+# cursor-skills
 
-Personal Agent Skills ported from [adarsh-nellore/claude-skills](https://github.com/adarsh-nellore/claude-skills).
-
-## Skills
-
-- **agent-states** — `~/.cursor/skills/agent-states/SKILL.md`
-- **agentic-design** — `~/.cursor/skills/agentic-design/SKILL.md`
-- **build-hifi** — `~/.cursor/skills/build-hifi/SKILL.md`
-- **build-lofi** — `~/.cursor/skills/build-lofi/SKILL.md`
-- **code-ready-prd** — `~/.cursor/skills/code-ready-prd/SKILL.md`
-- **design-ideation** — `~/.cursor/skills/design-ideation/SKILL.md`
-- **dress-up** — `~/.cursor/skills/dress-up/SKILL.md`
-- **founding-design-ideation** — `~/.cursor/skills/founding-design-ideation/SKILL.md` *(legacy; use **design-ideation** for new work)*
-- **humanizer** — `~/.cursor/skills/humanizer/SKILL.md`
-- **portfolio-voice** — `~/.cursor/skills/portfolio-voice/SKILL.md`
-- **the-humanizer** — `~/.cursor/skills/the-humanizer/SKILL.md`
-- **tooltip-walkthrough** — `~/.cursor/skills/tooltip-walkthrough/SKILL.md`
-- **ux-review** — `~/.cursor/skills/ux-review/SKILL.md`
-
-## Pipeline order
-
-```
-design-ideation → code-ready-prd → build-lofi → build-hifi
-                                    ↘ dress-up (Magic Patterns import)
-agentic-design → tooltip-walkthrough → ux-review
-```
-
-**Ideation entry:** `design-ideation` is the current ideation skill. `founding-design-ideation` remains for older workflows only.
-
-## Re-sync from Claude skills
+Cursor Agent Skills for the founding-designer pipeline. Install into `~/.cursor/skills`.
 
 ```bash
-node ~/.cursor/skills/_port-from-claude.mjs
+git clone https://github.com/adarsh-nellore/cursor-skills.git ~/.cursor/skills
 ```
 
-Source of truth remains `~/.claude/skills` (git: claude-skills repo). Install one-off skill packs from `.skill` zips, then run the port transforms in `_port-from-claude.mjs` (or the inline install script used for `design-ideation` and `code-ready-prd`).
+Pin the pre-change snapshot: `git checkout v0-baseline`
+
+See [PIPELINE.md](PIPELINE.md) for the full flow and preview ports.
+
+## Pipeline skills (default order)
+
+| Skill | Role |
+|-------|------|
+| **design-spec** | Brief + screenshots → `IDEATION.md` → `PRD.md` (2 review gates) |
+| **explore-mockup** | PRD → IA directions (3008) → feature buffet (3009) → `mockup-handoff.json` |
+| **dress-up** | Local seed or MP → audit → scaffold → peer-DS hi-fi (3053) |
+
+## Supporting skills
+
+- **agent-states** — reference for agent UX patterns
+- **agentic-design** — where to place AI in the product
+- **build-hifi** — fast lane (PRD → DS hi-fi, no gates)
+- **tooltip-walkthrough** — demo annotations
+- **ux-review** — Playwright audit + fixes
+- **humanizer**, **portfolio-voice**, **the-humanizer** — writing
+
+## Legacy (still present)
+
+- **founding-design-ideation**, **design-ideation**, **code-ready-prd**, **build-lofi** — use the pipeline skills above instead
+
+## Requirements
+
+- `~/Projects/adarsh-design-system` for dress-up / build-hifi
+- Playwright MCP for dress-up Stage 2 walkthrough and ux-review — see [PLAYWRIGHT-SETUP.md](PLAYWRIGHT-SETUP.md)
+
+## Repo layout
+
+```
+design-spec/
+explore-mockup/     # bundled HTML/CSS/JS renderers
+dress-up/bin/         # mp-to-next codemod, DS inventory, audit helpers
+build-hifi/
+agent-states/
+...
+```

@@ -19,6 +19,8 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 
 # Founding Design Ideation Skill
 
+> **Legacy.** Use **`@design-spec`** for new work.
+
 ## Philosophy
 
 This skill compresses the ideation loop from Brief → code-ready PRD into a reviewable,

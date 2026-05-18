@@ -38,8 +38,9 @@ needs to generate working code without back-and-forth.
 
 ## Pipeline composition
 
-- **Upstream:** `/design-ideation` (Phase 8 handoff block). Legacy: `/founding-design-ideation`.
-- **Downstream:** `/build-lofi` (reads `./PRD.md`), `/build-hifi` (reads `./PRD.md`; optional `sketch.html` from build-lofi), `/dress-up --prd <path>` (Magic Patterns import path).
+- **Preferred upstream:** `@design-spec` (writes `IDEATION.md`, `HANDOFF.md`, `PRD.md`).
+- **Legacy upstream:** `/design-ideation` (Phase 8 handoff). `/founding-design-ideation` is legacy.
+- **Downstream:** `@explore-mockup`, `@dress-up --from-mockup`, `@build-hifi` (fast lane). Legacy: `@build-lofi`, MP + `@dress-up <url>`.
 
 ---
 

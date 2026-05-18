@@ -17,6 +17,10 @@ Ported from [claude-skills](https://github.com/adarsh-nellore/claude-skills).
 | Playwright (dress-up Stage 2, ux-review) | MCP server `playwright` in `~/.cursor/mcp.json`. Preflight: `~/.cursor/skills/bin/preflight-playwright.sh`. See `~/.cursor/skills/PLAYWRIGHT-SETUP.md` |
 
 
+## Fast lane (not the default pipeline)
+
+Use **`@design-spec` → `@explore-mockup` → `@dress-up --from-mockup`** when you want review gates and PRD-vs-seed audit. Use **`@build-hifi`** only when you already have a locked PRD and want one-shot DS-native screens without explore/dress-up.
+
 ## Role
 
 Generator. The user has cloned a pre-built design-system codebase
@@ -62,8 +66,8 @@ the same batch, not a sequential step.
   directory.
 - A PRD is available (file inside the folder, or pasted into the
   conversation).
-- Optionally, a `sketch.html` from `/build-lofi` is present in
-  the folder.
+- Optionally, `mockup-handoff.json` + `concepts.json` from
+  `@explore-mockup`, or legacy `sketch.html` from `@build-lofi`.
 
 ## When NOT to run
 
@@ -82,10 +86,13 @@ Accept either:
 2. Pasted PRD text in the user's message.
 
 Also accept (optional):
-- A path to `sketch.html` produced by `/build-lofi`. If present,
-  read the picked option's "why this pattern" prose and screen list
-  to seed the prototype's IA. If absent, derive the screen list from
-  the PRD's core screens section.
+- `mockup-handoff.json` from `@explore-mockup` — use
+  `approved_direction_id`, `approved_concept_ids`, and
+  `cornerstone_route` to seed IA. Read matching entries in
+  `concepts.json` for layout hints.
+- Legacy `sketch.html` from `@build-lofi` — if present without
+  handoff, derive screens from PRD §10 and §19 only (ignore
+  deprecated "picked option" footer pattern).
 
 ## Design-system contract (required in the project folder)
 
@@ -155,14 +162,14 @@ because subagents are required to use these.
 
 ### Beat 2: Decide screen list and routing
 
-If `sketch.html` is present in the project folder:
-- Parse the option that the user picked (if a `selected` query
-  parameter or a `picked.html` file points at one, use it; otherwise
-  use the recommended option from the sketch's footer).
-- Extract the 3 screen labels from that option section.
-- Use those as the prototype's screens.
+If `mockup-handoff.json` is present:
+- Use `cornerstone_route` plus PRD §10 surfaces tied to
+  `approved_concept_ids` as the screen list (4–6 routes).
 
-If `sketch.html` is absent:
+Else if `concepts.json` is present without handoff:
+- Map concept titles to routes; prefer PRD §19 for path names.
+
+Else:
 - Read the PRD's IA section and "core screens" section.
 - Pick 4 to 6 screens that cover the PRD's primary user journey.
 
